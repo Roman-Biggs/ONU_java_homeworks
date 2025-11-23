@@ -94,7 +94,7 @@ public class GameSession {
         System.out.println("Player final choice: " + (playerFinalChoice + 1));
         System.out.println("Doors information:");
         for (int i = 0; i < DOOR_COUNT; i++) {
-            System.out.println(doors[i].getDoorInfo(i));
+            System.out.println(doors[i].getDoorInfo(i + 1));
         }
     }
 }
