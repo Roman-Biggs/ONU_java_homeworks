@@ -1,99 +1,20 @@
 package exercise.sixth;
 
-import java.util.Scanner;
-
 public class Main {
 
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        GameSessionExtended game = new GameSessionExtended();
+        // Создаем экземпляр нашей игры
+        GameRunnable gameSession = new GameRunnable();
 
-        System.out.println("Добро пожаловать в игру Монти-Холла!");
-        //Для входа в игровую сессию
-        boolean playAgain = true;
-        int roundNumber = 1;
+        // Запускаем её.
+        // Так как это implements Runnable, мы можем запустить это в отдельном потоке,
+        // если захотим (для сервера это критично).
+        // Для консоли пока достаточно просто вызвать run().
 
-        //Точка входа в игровую сессию
-        while (playAgain) {
-            // 1. Старт игры
-            game.startGame();
+        gameSession.run();
 
-            // 2. Игрок выбирает дверь
-            int choice = 0;
-            while (true) {
-                System.out.print("\nВыберите дверь (1-3): ");
-                if (scanner.hasNextInt()) {
-                    choice = scanner.nextInt();
-                    if (choice >= 1 && choice <= 3) break;
-                } else {
-                    scanner.next(); // пропускаем неправильный ввод
-                }
-                System.out.println("Ошибка! Введите число от 1 до 3.");
-            }
-            game.playerChooses(choice);
-
-            // 3. Ведущий открывает одну дверь без приза
-            game.hostOpensDoorUnknown();
-
-            // 4. Проверяем, открыл ли ведущий дверь с призом
-            boolean hostHitPrize = game.didHostHitPrize();
-            if (hostHitPrize) {
-                System.out.println("\nВедущий случайно открыл дверь с призом!");
-                System.out.println("Ведущий победил, игра завершена.");
-                System.out.println("\n=== Результат раунда " + roundNumber + " ===");
-                game.currentSessionInfo();
-
-                // Спрашиваем играть ли снова
-                playAgain = Utils.askPlayAgain();
-                if (playAgain) {
-                    roundNumber++;
-                    System.out.println("\nНачинаем новый раунд!\n");
-                } else {
-                    System.out.println("Спасибо за игру!");
-                }
-
-                continue; // можно перейти к следующему раунду
-                // continue - пропустить оставшуюся часть текущей итерации и перейти к следующей итерации цикла (к новому раунду)
-            }
-
-            // 4. Игрок решает менять выбор
-            String switchInput = "";
-            boolean switchChoice = false;
-            while (true) {
-                System.out.print("Хотите поменять выбор на другую дверь? (y/n): ");
-                switchInput = scanner.next();
-                if (switchInput.equalsIgnoreCase("y")) {
-                    switchChoice = true;
-                    break;
-                } else if (switchInput.equalsIgnoreCase("n")) {
-                    switchChoice = false;
-                    break;
-                }
-                System.out.println("Введите y или n.");
-            }
-            game.playerFinalDecision(switchChoice);
-
-            // 5. Результат
-            System.out.println("\n=== Результат раунда " + roundNumber + " ===");
-            game.currentSessionInfo();
-            if (game.isPlayerWin()) {
-                System.out.println("Поздравляем! Вы выиграли приз!");
-            } else {
-                System.out.println("К сожалению, вы проиграли.");
-            }
-
-            // 6. Спрашиваем, играть ли снова
-            playAgain = Utils.askPlayAgain();
-            if (playAgain) {
-                roundNumber++;
-                System.out.println("\nНачинаем новый раунд!\n");
-            } else {
-                System.out.println("Спасибо за игру!");
-            }
-
-        }
-
-        scanner.close();
-
+        // Если бы мы писали многопоточный сервер, это выглядело бы так:
+        // Thread gameThread = new Thread(new GameRunnable());
+        // gameThread.start();
     }
 }
