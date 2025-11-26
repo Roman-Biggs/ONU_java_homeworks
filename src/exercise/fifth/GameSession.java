@@ -3,16 +3,15 @@ package exercise.fifth;
 import java.util.Random;
 
 public class GameSession {
-    private Door[] doors; //массив из трёх дверей
-    //Храним как числа для массива (т.е. от 0 до 2)
-    private int playerInitialChoice;
-    private int hostOpenedDoor;
-    private int playerFinalChoice;
-    private Random random;
+    // МЕНЯЕМ private на protected, чтобы наследник видел эти поля
+    protected Door[] doors;
+    protected int playerInitialChoice;
+    protected int hostOpenedDoor;
+    protected int playerFinalChoice;
+    protected Random random;
 
-    private static final int DOOR_COUNT = 3; // константа для числа дверей
+    protected static final int DOOR_COUNT = 3;
 
-    //Конструктор - задаём рандомное число и создаём изначальный массив из 3-ёх дверей
     public GameSession() {
         this.random = new Random();
         this.doors = new Door[DOOR_COUNT];
@@ -21,41 +20,30 @@ public class GameSession {
         }
     }
 
-    //Сброс всей информации перед началом игры
     public void resetAllBeforeGame(){
-
-        //Сброс полей выборов игрока и ведущего старой сессии
         this.playerInitialChoice = -1;
         this.hostOpenedDoor = -1;
         this.playerFinalChoice = -1;
-
-        //Сброс информации каждой двери старой сессии
         for  (int i = 0; i < DOOR_COUNT; i++) {
             doors[i].reset();
         }
     }
 
-    // 1. Старт игры: чистим старую инфу и размещаем новый приз
     public void startGame() {
         resetAllBeforeGame();
-
-        // случайно размещаем приз
-        int prizeDoor = random.nextInt(3); //генерирует случайное число от 0 до 3 (невключительно)
+        int prizeDoor = random.nextInt(3);
         doors[prizeDoor].setHasPrize(true);
     }
 
-    // 2. Игрок делает выбор
     public void playerChooses(int doorIndex) {
-        this.playerInitialChoice = doorIndex - 1; //Приводим от натурального числа к числу для массива
+        this.playerInitialChoice = doorIndex - 1;
         doors[doorIndex - 1].setIsChosenByPlayer(true);
     }
 
-    // 3. Ведущий открывает дверь без приза, которую игрок не выбрал
+    // Этот метод мы будем ПЕРЕОПРЕДЕЛЯТЬ в наследнике
     public void hostOpensDoor() {
         for (int i = 0; i < DOOR_COUNT; i++) {
-            if (i != playerInitialChoice
-                    && !doors[i].hasPrize()) {
-
+            if (i != playerInitialChoice && !doors[i].hasPrize()) {
                 hostOpenedDoor = i;
                 doors[i].setIsChosenByHost(true);
                 return;
@@ -63,16 +51,12 @@ public class GameSession {
         }
     }
 
-    // 4. Игрок принимает финальное решение (менять или нет)
     public void playerFinalDecision(boolean switchChoice) {
         if (!switchChoice) {
-            // остаёмся при прежнем выборе
             playerFinalChoice = playerInitialChoice;
         } else {
-            // ищем дверь, которую:
-            //  - не выбрал игрок изначально
-            //  - не открыл ведущий
             for (int i = 0; i < DOOR_COUNT; i++) {
+                // ВАЖНО: проверяем, чтобы не выбрать начальный выбор и открытую дверь
                 if (i != playerInitialChoice && i != hostOpenedDoor) {
                     playerFinalChoice = i;
                     break;
@@ -81,12 +65,14 @@ public class GameSession {
         }
     }
 
-    // 5. Проверка выигрыша
     public boolean isPlayerWin() {
+        // Если ведущий случайно открыл приз (в расширенной версии), игрок технически не выиграл в классическом смысле,
+        // но этот метод проверяет финальный выбор.
+        // Доп. проверку на победу ведущего лучше делать отдельно или внутри логики игры.
+        if (playerFinalChoice == -1) return false; // Защита
         return doors[playerFinalChoice].hasPrize();
     }
 
-    // Отладочный вывод состояния дверей
     public void currentSessionInfo() {
         System.out.println("Current game session information:");
         System.out.println("Player initial choice: " + (playerInitialChoice + 1));
